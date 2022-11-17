@@ -1,0 +1,3 @@
+[submodule "unbiased-teacher-v2"]
+	path = unbiased-teacher-v2
+	url = https://github.com/stefanrua/unbiased-teacher-v2
