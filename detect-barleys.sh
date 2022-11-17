@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source venv/bin/activate
 python3 cut.py
 python3 unbiased-teacher-v2/train_net.py \
       --eval-only \

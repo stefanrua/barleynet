@@ -4,7 +4,7 @@ import json
 # output: predictions.json
 
 instancefile = 'instances.json'
-predfile_in = 'unbiased-teacher-v2/output/inference/coco_instances_results.json'
+predfile_in = 'output/inference/coco_instances_results.json'
 predfile_out = 'predictions.json'
 
 # instancefile
