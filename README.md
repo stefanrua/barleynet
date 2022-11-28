@@ -6,6 +6,7 @@ Detect barleys in an oat field!
 
 ## Prerequisites
 
+- A computer running Ubuntu or Debian
 - A GPU with CUDA support
 - Drone images of barleys in a an oat field
 
