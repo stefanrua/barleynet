@@ -10,8 +10,8 @@ verbose = True
 imgdir = 'images/'
 tiledir = 'tiles/'
 cocofile = 'instances.json'
-tile_w = 1000
-tile_h = 1000
+tile_w = 1333
+tile_h = 800
 
 # instances.json looks like this:
 '''
