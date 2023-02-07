@@ -9,10 +9,12 @@ imgdir = 'images/'
 labeldir = None
 tiledir = 'tiles/'
 cocofile = 'instances.json'
+resume = False
 
 skip_empty = False
 tile_w = 1200
 tile_h = 800
+existing_files = None
 
 helptext = f'''
 Usage:
@@ -25,6 +27,8 @@ Options:
  -l <path>    labels in labelme format      default={labeldir}
  -t <path>    cut output images             default={tiledir}
  -j <path>    output labels in coco format  default={cocofile}
+ --resume     don't re-cut done files
+ -h, --help   get help
 '''
 
 for i in range(len(sys.argv)):
@@ -42,9 +46,27 @@ for i in range(len(sys.argv)):
     if arg == '-j': # labels in coco format + positional info
         cocodir = sys.argv[i+1]
         i += 2
+    if arg == '--resume':
+        resume = True
+        i += 1
     if arg == '-h' or arg == '--help':
         print(helptext)
         exit()
+
+if resume:
+    existing_files = ['_'.join(x.split('_')[:-1]) + '.JPG' for x in os.listdir(tiledir)]
+    counts = {}
+    for f in existing_files:
+        if f in counts:
+            counts[f] += 1
+        else:
+            counts[f] = 1
+    existing_files = set(existing_files)
+    mean = sum(counts.values()) / len(counts)
+    for f in counts:
+        if counts[f] < mean:
+            print(f'{f} only has {counts[f]} tiles. Marking as not done.')
+            existing_files.remove(f)
 
 # {"image_id": 1, "category_id": 0, "bbox": [672.3211669921875, 216.00074768066406, 38.85247802734375, 84.76887512207031], "score": 0.990157425403595}
 
@@ -148,10 +170,11 @@ def save_tile(offset_x, offset_y, max_x, max_y,
             annotation_id += 1
 
     if not empty or not skip_empty:
-        tile = img[offset_y:max_y, offset_x:max_x, :]
-        tile = Image.fromarray(tile)
         tilename = name_tile(fname, tile_n)
-        tile.save(f'{tiledir}{tilename}')
+        if fname not in existing_files:
+            tile = img[offset_y:max_y, offset_x:max_x, :]
+            tile = Image.fromarray(tile)
+            tile.save(f'{tiledir}{tilename}')
         images_coco.append({
                 'id': tile_id,
                 'file_name': tilename,
@@ -170,9 +193,12 @@ def cut_image(fname):
         labelfile = fname.replace('.JPG', '.json')
         labelfile = labelfile.replace('.jpg', '.json')
         bboxes = bboxes_from_labelme(f'{labeldir}{labelfile}')
-    img = Image.open(f'{imgdir}{fname}')
-    img = np.array(img)
-    img_h, img_w, _ = img.shape
+    img = None
+    img_h, img_w = 5460, 8192
+    if fname not in existing_files:
+        img = Image.open(f'{imgdir}{fname}')
+        img = np.array(img)
+        img_h, img_w, _ = img.shape
     offset_x = 0
     offset_y = 0
     tile_n = 0
