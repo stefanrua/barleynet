@@ -44,7 +44,7 @@ for i in range(len(sys.argv)):
         tiledir = sys.argv[i+1]
         i += 2
     if arg == '-j': # labels in coco format + positional info
-        cocodir = sys.argv[i+1]
+        cocofile = sys.argv[i+1]
         i += 2
     if arg == '--resume':
         resume = True
