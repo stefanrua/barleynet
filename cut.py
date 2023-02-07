@@ -5,19 +5,46 @@ import os
 import sys
 from tqdm import tqdm
 
-# input:  imgdir/image.jpg
-# output: tiledir/tile.jpg, instances.json
-
-labeldir = None
-skip_empty = False
-if len(sys.argv) > 1:
-    labeldir = sys.argv[1] # optional, labels in labelme format
-    skip_empty = True
 imgdir = 'images/'
+labeldir = None
 tiledir = 'tiles/'
 cocofile = 'instances.json'
+
+skip_empty = False
 tile_w = 1200
 tile_h = 800
+
+helptext = f'''
+Usage:
+ {sys.argv[0]} [options]
+
+Cut images and generate COCO annotations
+
+Options:
+ -i <path>    full size images              default={imgdir}
+ -l <path>    labels in labelme format      default={labeldir}
+ -t <path>    cut output images             default={tiledir}
+ -j <path>    output labels in coco format  default={cocofile}
+'''
+
+for i in range(len(sys.argv)):
+    arg = sys.argv[i]
+    if arg == '-i': # full size images
+        imgdir = sys.argv[i+1]
+        i += 2
+    if arg == '-l': # labels in labelme format
+        labeldir = sys.argv[i+1]
+        skip_empty = True
+        i += 2
+    if arg == '-t': # cut images
+        tiledir = sys.argv[i+1]
+        i += 2
+    if arg == '-j': # labels in coco format + positional info
+        cocodir = sys.argv[i+1]
+        i += 2
+    if arg == '-h' or arg == '--help':
+        print(helptext)
+        exit()
 
 # {"image_id": 1, "category_id": 0, "bbox": [672.3211669921875, 216.00074768066406, 38.85247802734375, 84.76887512207031], "score": 0.990157425403595}
 
