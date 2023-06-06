@@ -8,6 +8,31 @@ from matplotlib import patches
 imgdir = 'images/'
 predfile = 'predictions.json'
 
+helptext = f'''
+Usage:
+ {sys.argv[0]} [options]
+
+Draw predictions onto images
+
+Options:
+ -i <path>    image directory     default={imgdir}
+ -p <path>    prediction json     default={predfile}
+ -h, --help   get help
+'''
+
+for i in range(len(sys.argv)):
+    arg = sys.argv[i]
+    if arg == '-i': # images
+        imgdir = sys.argv[i+1]
+        i += 2
+    if arg == '-p': # predictions json
+        predfile = sys.argv[i+1]
+        skip_empty = True
+        i += 2
+    if arg == '-h' or arg == '--help':
+        print(helptext)
+        exit()
+
 with open(predfile, 'r') as f:
     predictions = json.load(f)
 
