@@ -4,16 +4,18 @@ import os
 # input:  instances.json, coco_instances_results.json
 # output: predictions.json
 
+instancefile = 'instances.json'
+predfile_in = 'output/inference/coco_instances_results.json'
+predfile_out = 'predictions.json'
+
 ANNOTATIONS = os.getenv('ANNOTATIONS')
 OUTPUT_DIR = os.getenv('OUTPUT_DIR')
 
-instancefile = ANNOTATIONS
-predfile_in = f'{OUTPUT_DIR}/inference/coco_instances_results.json'
-predfile_out = f'{OUTPUT_DIR}/predictions.json'
-
-#instancefile = 'instances.json'
-#predfile_in = 'output/inference/coco_instances_results.json'
-#predfile_out = 'predictions.json'
+if ANNOTATIONS:
+    instancefile = ANNOTATIONS
+if OUTPUT_DIR:
+    predfile_in = f'{OUTPUT_DIR}/inference/coco_instances_results.json'
+    predfile_out = f'{OUTPUT_DIR}/predictions.json'
 
 # instancefile
 '''
