@@ -1,0 +1,7 @@
+# Python bytecode
+__pycache__/
+
+# Project-specific
+/models/
+/images/
+/tiles/
