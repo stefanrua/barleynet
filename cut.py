@@ -5,7 +5,7 @@ import os
 import sys
 from tqdm import tqdm
 
-imgdir = 'images/'
+imgdir = '/home/axel-paivansalo/alien_barley/datasets/alien_barley/tiny_kultti/'
 labeldir = None
 tiledir = 'tiles/'
 cocofile = 'instances.json'

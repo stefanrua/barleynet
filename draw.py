@@ -5,7 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
-imgdir = 'images/'
+imgdir = '/home/axel-paivansalo/alien_barley/datasets/alien_barley/tiny_kultti/'
 predfile = 'predictions.json'
 
 helptext = f'''

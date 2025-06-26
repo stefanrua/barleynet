@@ -24,9 +24,9 @@ cd barleynet
 ./setup.sh
 ```
 
-## Inference
+## How to use
 
-1. Put your images in the `images/` directory
+1. Change the image dir path in cut.py and draw.py to your own path
 1. Run `./detect-barleys.sh`
 1. The model's predictions are in `predictions.json`
 
@@ -60,5 +60,5 @@ The `predictions.json` file is structured like this:
 
 To visualize the predictions for an image:
 ```
-python3 draw.py DJI_20210709135005_0049.JPG
+python3 draw.py <image_filename>
 ```
