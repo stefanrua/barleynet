@@ -1,34 +1,13 @@
-# barleynet
+# Detect barleys in an oat field
 
 ![](barley-detection.png)
-
-Detect barleys in an oat field!
-
-## Prerequisites
-
-- A computer running Ubuntu or Debian
-- A GPU with CUDA support
-- Drone images of barleys in a an oat field
-
-## Installation
-
-You'll need Python's venv module. If you don't have it, install it using
-```
-sudo apt install python3-venv
-```
-
-Then, clone this repository and run the setup script.
-```
-git clone https://github.com/stefanrua/barleynet.git
-cd barleynet
-./setup.sh
-```
 
 ## How to use
 
 1. Change the image dir path in cut.py and draw.py to your own path
-1. Run `./detect-barleys.sh`
-1. The model's predictions are in `predictions.json`
+2. Put your model weights in /models
+3. Run `./detect-barleys.sh`
+4. The model's predictions are in `predictions.json`
 
 The `predictions.json` file is structured like this:
 ```

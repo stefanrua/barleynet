@@ -1,11 +1,7 @@
 #!/bin/bash
 
-if [ ! -d venv ]; then
-    ./setup.sh
-fi
-
-config=unbiased-teacher-v2/configs/Faster-RCNN/alien-barley/all_samples.yaml
-model=models/faster-rcnn/model_0061999.pth
+config=unbiased-teacher-v2/configs/Faster-RCNN/alien-barley/old/all_samples.yaml
+model=models/weights_faster-rcnn_model_0019999.pth
 cut=true
 
 for i in "$@"; do
@@ -22,7 +18,9 @@ for i in "$@"; do
     esac
 done
 
-source venv/bin/activate
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ut2
+
 if [ $cut = true ]; then
     python3 cut.py
 fi

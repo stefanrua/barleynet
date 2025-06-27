@@ -14,7 +14,7 @@ resume = False
 skip_empty = False
 tile_w = 1200
 tile_h = 800
-existing_files = None
+existing_files = []
 
 helptext = f'''
 Usage:
@@ -52,6 +52,8 @@ for i in range(len(sys.argv)):
     if arg == '-h' or arg == '--help':
         print(helptext)
         exit()
+
+os.makedirs(tiledir, exist_ok=True)
 
 if resume:
     existing_files = ['_'.join(x.split('_')[:-1]) + '.JPG' for x in os.listdir(tiledir)]
