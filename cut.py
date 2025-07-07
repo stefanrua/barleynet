@@ -4,6 +4,7 @@ import numpy as np
 import os
 import sys
 from tqdm import tqdm
+from image_utils import get_tiles, get_overlapping_part, x1y1x2y2_to_xywh
 
 imgdir = '/home/axel-paivansalo/alien_barley/datasets/alien_barley/tiny_kultti/'
 labeldir = None
@@ -129,94 +130,77 @@ def bboxes_from_labelme(fname):
     bboxes = [b for b in bboxes if (b[2] - b[0]) * (b[3] - b[1]) < 20000]
     return bboxes
 
-# tile: [x1, y1, x2, y2]
-# bbox: [x1, y1, x2, y2]
-# returns: None if no overlap, else the overlapping part
-#                                   [x, y, width, height]
-def bbox_in_tile(tile, bbox):
-    xmin = max(tile[0], bbox[0])
-    xmax = min(tile[2], bbox[2])
-    ymin = max(tile[1], bbox[1])
-    ymax = min(tile[3], bbox[3])
-    dx = xmax - xmin
-    dy = ymax - ymin
-    if (dx > 0) and (dy > 0):
-        return [xmin, ymin, dx, dy]
-    return None
+# reads fname, cuts it into tiles, and saves to disk
+# returns: list of images in coco format
+def cut_image(fname):
+    global tile_id, annotation_id
+    bboxes = []
+    if labeldir:
+        labelfile = fname.replace('.JPG', '.json')
+        labelfile = labelfile.replace('.jpg', '.json')
+        bboxes = bboxes_from_labelme(f'{labeldir}{labelfile}')
+    
+    img = None
+    try:
+        if fname not in existing_files:
+            img = Image.open(f'{imgdir}{fname}')
+            img = np.array(img)
+    except FileNotFoundError:
+        print(f"Image not found: {imgdir}{fname}")
+        return [], []
 
-def save_tile(offset_x, offset_y, max_x, max_y,
-        img, bboxes, tile_n, annotations_coco, images_coco):
-    global annotation_id
-    tilecoords = [offset_x, offset_y, max_x, max_y]
-    empty = True
-    for bbox in bboxes:
-        bbox = bbox_in_tile(tilecoords, bbox)
-        if bbox:
-            empty = False
-            bbox = [
-                    bbox[0] - offset_x,
-                    bbox[1] - offset_y,
-                    bbox[2],
-                    bbox[3],
+    annotations_coco = []
+    images_coco = []
+    
+    if img is None: # if file exists but we are resuming and don't load it
+        img = np.empty((5460, 8192, 3)) # placeholder
+
+    for tile_coords, tile_img, tile_n in get_tiles(img, tile_w, tile_h):
+        offset_x, offset_y, max_x, max_y = tile_coords
+        
+        tile_annotations = []
+        for bbox in bboxes:
+            overlapping_part = get_overlapping_part(tile_coords, bbox)
+            if overlapping_part:
+                # transform bbox to tile coordinates
+                new_bbox = [
+                    overlapping_part[0] - offset_x,
+                    overlapping_part[1] - offset_y,
+                    overlapping_part[2] - offset_x,
+                    overlapping_part[3] - offset_y
                 ]
-            annotations_coco.append({
+                new_bbox_xywh = x1y1x2y2_to_xywh(new_bbox)
+                
+                tile_annotations.append({
                     "image_id": tile_id,
                     "category_id": 0,
-                    "bbox": bbox,
+                    "bbox": new_bbox_xywh,
                     "id": annotation_id,
-                    "area": bbox[2] * bbox[3],
+                    "area": new_bbox_xywh[2] * new_bbox_xywh[3],
                     "iscrowd": 0,
                     "supercategory": "none",
                     "ignore": 0,
                 })
-            annotation_id += 1
-
-    if not empty or not skip_empty:
-        tilename = name_tile(fname, tile_n)
-        if fname not in existing_files:
-            tile = img[offset_y:max_y, offset_x:max_x, :]
-            tile = Image.fromarray(tile)
-            tile.save(f'{tiledir}{tilename}')
-        images_coco.append({
+                annotation_id += 1
+        
+        if not skip_empty or len(tile_annotations) > 0:
+            annotations_coco.extend(tile_annotations)
+            
+            tilename = name_tile(fname, tile_n)
+            if fname not in existing_files:
+                tile_to_save = Image.fromarray(tile_img)
+                tile_to_save.save(f'{tiledir}{tilename}')
+            
+            images_coco.append({
                 'id': tile_id,
                 'file_name': tilename,
                 'width': max_x - offset_x,
                 'height': max_y - offset_y,
                 'offset': [offset_x, offset_y],
                 'parent': fname,
-        })
-
-# reads fname, cuts it into tiles, and saves to disk
-# returns: list of images in coco format
-def cut_image(fname):
-    global tile_id
-    bboxes = []
-    if labeldir:
-        labelfile = fname.replace('.JPG', '.json')
-        labelfile = labelfile.replace('.jpg', '.json')
-        bboxes = bboxes_from_labelme(f'{labeldir}{labelfile}')
-    img = None
-    img_h, img_w = 5460, 8192
-    if fname not in existing_files:
-        img = Image.open(f'{imgdir}{fname}')
-        img = np.array(img)
-        img_h, img_w, _ = img.shape
-    offset_x = 0
-    offset_y = 0
-    tile_n = 0
-    annotations_coco = []
-    images_coco = []
-    while offset_y < img_h:
-        max_y = min(offset_y + tile_h, img_h)
-        while offset_x < img_w:
-            max_x = min(offset_x + tile_w, img_w)
-            save_tile(offset_x, offset_y, max_x, max_y,
-                img, bboxes, tile_n, annotations_coco, images_coco)
-            tile_n += 1
+            })
             tile_id += 1
-            offset_x += tile_w
-        offset_x = 0
-        offset_y += tile_h
+            
     return annotations_coco, images_coco
 
 instances_coco = {

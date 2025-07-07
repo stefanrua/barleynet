@@ -1,4 +1,6 @@
 models/
 tiles/
+output/
+inference/
 instances.json
 predictions.json
